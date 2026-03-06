@@ -400,6 +400,5 @@ Kalman Filtering — Grewal & Andrews, Wiley 2015
 Private repository. All rights reserved.
 
 ---
-  <strong>POLARIS</strong> · Built by Antigravity · 2024<br/>
   <em>Political Opinion Learning and Adaptive Response Intelligence System</em>
 </p>
