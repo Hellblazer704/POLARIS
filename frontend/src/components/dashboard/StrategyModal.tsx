@@ -368,7 +368,7 @@ const StrategyModal: React.FC = () => {
                                                     label={{ value: 'Δs (sentiment shift)', position: 'bottom', fill: '#546E7A', fontSize: 9 }} />
                                                 <YAxis stroke="#546E7A" fontSize={9} fontFamily="'JetBrains Mono'" hide />
                                                 <Tooltip contentStyle={{ background: '#0F2040', border: '1px solid #1E3A5F', borderRadius: 8, fontSize: 10 }}
-                                                    formatter={(v: number) => [v.toFixed(4), 'P(Δs)']} />
+                                                    formatter={(v: any) => [Number(v).toFixed(4), 'P(Δs)']} />
                                                 <defs>
                                                     <linearGradient id="densityGrad" x1="0" y1="0" x2="0" y2="1">
                                                         <stop offset="0%" stopColor="#FFB300" stopOpacity={0.6} />

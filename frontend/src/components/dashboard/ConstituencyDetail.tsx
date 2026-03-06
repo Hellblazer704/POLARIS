@@ -133,7 +133,7 @@ const ConstituencyDetail: React.FC = () => {
                                 <YAxis domain={[-1, 1]} hide />
                                 <Tooltip
                                     contentStyle={{ background: '#0F2040', border: '1px solid #1E3A5F', borderRadius: 6, fontSize: 10 }}
-                                    formatter={(v: number) => [v.toFixed(3), 'Sentiment']}
+                                    formatter={(v: any) => [Number(v).toFixed(3), 'Sentiment']}
                                 />
                                 <Line type="monotone" dataKey="value" stroke="#FFB300" strokeWidth={2} dot={false} />
                             </LineChart>
