@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine, LineChart, Line } from "recharts";
-import { Activity, AlertCircle, Database, Eye, Globe, Search, Terminal, TrendingUp, X, Zap, Shield, Cpu, Layers } from "lucide-react";
+import { Activity, AlertCircle, Database, Eye, Globe, Search, Terminal, TrendingUp, X, Zap, Shield, Cpu, Layers, CheckCircle2, Loader2 } from "lucide-react";
 
 // --- MOCK DATA ---
 const trendData = [
@@ -472,7 +472,39 @@ function TerminalSimulator() {
 }
 
 function InterceptSnapshotModal({ data, onClose }) {
+  const [isFlagging, setIsFlagging] = useState(false);
+  const [hasFlagged, setHasFlagged] = useState(false);
+  const [traceLogs, setTraceLogs] = useState([]);
+  const [isTracing, setIsTracing] = useState(false);
+  const [hasTraced, setHasTraced] = useState(false);
+
   if (!data) return null;
+
+  const handleFlagError = () => {
+    setIsFlagging(true);
+    setTimeout(() => {
+      setIsFlagging(false);
+      setHasFlagged(true);
+    }, 1500);
+  };
+
+  const handleTraceSource = async () => {
+    setIsTracing(true);
+    setTraceLogs([]);
+    const steps = [
+      "Connecting to Regional Node...",
+      "Resolving Proxy Hops [1/3]...",
+      "Analyzing Geolocation TTL...",
+      "Matching User Signature...",
+      "Source Identified."
+    ];
+    for(let step of steps) {
+      setTraceLogs(prev => [...prev, step]);
+      await new Promise(r => setTimeout(r, 600));
+    }
+    setIsTracing(false);
+    setHasTraced(true);
+  };
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
@@ -519,38 +551,73 @@ function InterceptSnapshotModal({ data, onClose }) {
             </div>
 
             <div className="flex flex-col gap-4">
-              <div className="bg-slate-900 border border-slate-800 p-4 relative overflow-hidden rounded-lg">
+              <div className="bg-slate-900 border border-slate-800 p-4 relative overflow-hidden rounded-lg min-h-[160px]">
                 <div className="absolute top-0 right-0 w-16 h-16 bg-[#FF6600] opacity-[0.05] rounded-bl-full"></div>
-                <div className="text-[8px] font-mono text-slate-500 tracking-widest mb-3 uppercase font-bold">AI_ANALYSIS</div>
-                
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center border-b border-slate-800 pb-1">
-                    <span className="font-mono text-[9px] text-slate-400">ANALYSIS_MODEL</span>
-                    <span className="font-mono text-[10px] text-white bg-slate-800 px-1 rounded-sm">{data.model}</span>
-                  </div>
-                  <div className="flex justify-between items-center border-b border-slate-800 pb-1">
-                    <span className="font-mono text-[9px] text-slate-400">AUTHENTICITY</span>
-                    <span className="font-mono text-[10px] text-[#2E7D32] font-black">{(data.prob * 100).toFixed(1)}%</span>
-                  </div>
-                  <div className="flex justify-between items-center border-b border-slate-800 pb-1">
-                    <span className="font-mono text-[9px] text-slate-400">SENTIMENT_SCORE</span>
-                    <span className={`font-mono text-[10px] font-black ${data.sent < 0 ? 'text-[#D32F2F]' : 'text-[#2E7D32]'}`}>{data.sent.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="font-mono text-[9px] text-slate-400">REGION</span>
-                    <span className="font-mono text-[10px] text-white flex items-center gap-1 font-bold">
-                      <Globe className="w-3 h-3 text-[#FF6600]" /> {data.geo}
-                    </span>
-                  </div>
+                <div className="text-[8px] font-mono text-slate-500 tracking-widest mb-3 uppercase font-bold">
+                  {isTracing ? "SOURCE_TRACE_IN_PROGRESS" : "AI_ANALYSIS"}
                 </div>
+                
+                {isTracing || hasTraced ? (
+                  <div className="space-y-1.5 font-mono text-[9px] text-[#FF6600]">
+                    {traceLogs.map((log, i) => (
+                      <div key={i} className="flex gap-2 items-center">
+                        <span className="text-slate-600">&gt;</span> {log}
+                      </div>
+                    ))}
+                    {hasTraced && (
+                      <div className="mt-4 p-2 bg-[#2E7D32]/10 border border-[#2E7D32]/20 text-[#2E7D32] flex items-center gap-2 rounded">
+                        <CheckCircle2 className="w-3 h-3" /> TRACE COMPLETE: AUTHENTIC NODE VERIFIED
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center border-b border-slate-800 pb-1">
+                      <span className="font-mono text-[9px] text-slate-400">ANALYSIS_MODEL</span>
+                      <span className="font-mono text-[10px] text-white bg-slate-800 px-1 rounded-sm">{data.model}</span>
+                    </div>
+                    <div className="flex justify-between items-center border-b border-slate-800 pb-1">
+                      <span className="font-mono text-[9px] text-slate-400">AUTHENTICITY</span>
+                      <span className="font-mono text-[10px] text-[#2E7D32] font-black">{(data.prob * 100).toFixed(1)}%</span>
+                    </div>
+                    <div className="flex justify-between items-center border-b border-slate-800 pb-1">
+                      <span className="font-mono text-[9px] text-slate-400">SENTIMENT_SCORE</span>
+                      <span className={`font-mono text-[10px] font-black ${data.sent < 0 ? 'text-[#D32F2F]' : 'text-[#2E7D32]'}`}>{data.sent.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="font-mono text-[9px] text-slate-400">REGION</span>
+                      <span className="font-mono text-[10px] text-white flex items-center gap-1 font-bold">
+                        <Globe className="w-3 h-3 text-[#FF6600]" /> {data.geo}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="flex gap-2 mt-auto">
-                <button className="flex-1 bg-[#D32F2F]/5 border border-[#D32F2F]/30 text-[#D32F2F] hover:bg-[#D32F2F] hover:text-white font-mono text-[9px] py-2.5 tracking-widest transition-all rounded-md font-bold">
-                  FLAG_ERROR
+                <button 
+                  onClick={handleFlagError}
+                  disabled={isFlagging || hasFlagged}
+                  className={`flex-1 border font-mono text-[9px] py-2.5 tracking-widest transition-all rounded-md font-bold flex items-center justify-center gap-2 ${
+                    hasFlagged 
+                    ? 'bg-[#2E7D32] text-white border-[#2E7D32]' 
+                    : 'bg-[#D32F2F]/5 border-[#D32F2F]/30 text-[#D32F2F] hover:bg-[#D32F2F] hover:text-white'
+                  }`}
+                >
+                  {isFlagging ? <Loader2 className="w-3 h-3 animate-spin" /> : hasFlagged ? <CheckCircle2 className="w-3 h-3" /> : null}
+                  {isFlagging ? 'FLAGGING...' : hasFlagged ? 'REPORT SENT' : 'FLAG_ERROR'}
                 </button>
-                <button className="flex-1 bg-[#FF6600]/5 border border-[#FF6600]/30 text-[#FF6600] hover:bg-[#FF6600] hover:text-white font-mono text-[9px] py-2.5 tracking-widest transition-all rounded-md font-bold">
-                  TRACE_SOURCE
+                <button 
+                  onClick={handleTraceSource}
+                  disabled={isTracing || hasTraced}
+                  className={`flex-1 border font-mono text-[9px] py-2.5 tracking-widest transition-all rounded-md font-bold flex items-center justify-center gap-2 ${
+                    hasTraced
+                    ? 'bg-slate-900 text-white border-slate-900'
+                    : 'bg-[#FF6600]/5 border-[#FF6600]/30 text-[#FF6600] hover:bg-[#FF6600] hover:text-white'
+                  }`}
+                >
+                  {isTracing ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
+                  {isTracing ? 'TRACING...' : hasTraced ? 'SOURCE_TRACED' : 'TRACE_SOURCE'}
                 </button>
               </div>
             </div>
